@@ -71,4 +71,56 @@ Pros:
 Leader continues processing writes even if all followers have fallen behind (as there is no synchronous follower to wait for) hence `enhanching write availability`
 
 Cons:
-If leader fails, any write that hasn't been replicated are lost (`harming durability`).
+If leader fails, any write that hasn't been replicated are lost `harming durability`.
+
+Although weakening durability sounds bad however asynchronous replication is widely used, espically many followers are available. 
+
+##### side note:
+Researchers investigated methods providing good performance and availabiltiy without data loss in case of leader failure. Example, chain replication (variant of synchronous replication) used in Microsoft Azure Storage relying on consistency and consensus (nodes agreeing on a value) relation.
+
+---
+
+### Setting Up New Followers
+
+Setting a new follower to increase number of replicas or replace failed nodes.
+Standard file copy from node to node wouldn't work as data is always in flux (changing) and thus it only makes sense if we lock writes on leader file during copying which goes against our goal of high availability.
+
+There is a way that we could make this feasiable without any downtime
+1. Taking a snapshot at some point of time without locking entire database (feature supported by databases or extensions to handle backups).
+2. Copying the snapshot to the new follower.
+3. The follower connects to leader and requests changes since snapshot has been taken, Thus our snapshot needs to be associated with an exact position in leader's replication log.
+4. After the follower has processed backlog since the snapshot. it has caught up with leader and can continue to process data changes from leader as they happen.
+
+This workflow may be carried manually or automatically depending on database.
+
+### Handling Node Outages
+
+Any node can go down due to fault or system maintance. Thus our goal is to keep entire system running despite node failures and reduce impact of node outage.
+
+Problem: Achieve high availability with leader-based replication
+
+
+
+---
+
+### Implementation of Replication Logs
+
+`empty`
+
+---
+
+### Problems with Replication Lag
+
+#### Follower failure: Catch-up recovery
+Follower keeps a log of the data changes it has received from the leader. If anything went wrong, follower can recover easily as it knows the last transaction that was processed successfully. Thus, the follower can connect to the leader and request all the data changes that occurred sfter that point. After applying these changes, it has caught up to the leader and can continue normally.
+
+##### Leader failure: Failover
+`Failover`: one of the followers needs to be promoted to be the new leader, clients need to send their writes to the new leader, and the other followers need to start listening on data changes from the new leader.
+
+Handling leader failure is trickier than follower failure.
+Failover can happen manually or automatically.
+
+Automatic failover process:
+1. `Determining leader failure`: Nodes bounce messages from time to time between each other. if node didn't respond for some time, it is declared dead.
+2. `Choosing new leader`: Usually done through election process (consensus) or appointed by a previously elected controller node. The best candidate is usually replica with most up-to-date copy minimizing data loss.
+3. `Reconfiguring the system`: Cients need to send their write requests to new leader, other followers need to take changes from new leader. If old leader comes back. the system must force it to step down and become a follower.
