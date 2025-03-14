@@ -93,24 +93,15 @@ There is a way that we could make this feasiable without any downtime
 
 This workflow may be carried manually or automatically depending on database.
 
+---
+
 ### Handling Node Outages
 
 Any node can go down due to fault or system maintance. Thus our goal is to keep entire system running despite node failures and reduce impact of node outage.
 
 Problem: Achieve high availability with leader-based replication
 
-
-
----
-
-### Implementation of Replication Logs
-
-`empty`
-
----
-
-### Problems with Replication Lag
-
+Solution:
 #### Follower failure: Catch-up recovery
 Follower keeps a log of the data changes it has received from the leader. If anything went wrong, follower can recover easily as it knows the last transaction that was processed successfully. Thus, the follower can connect to the leader and request all the data changes that occurred sfter that point. After applying these changes, it has caught up to the leader and can continue normally.
 
@@ -123,4 +114,14 @@ Failover can happen manually or automatically.
 Automatic failover process:
 1. `Determining leader failure`: Nodes bounce messages from time to time between each other. if node didn't respond for some time, it is declared dead.
 2. `Choosing new leader`: Usually done through election process (consensus) or appointed by a previously elected controller node. The best candidate is usually replica with most up-to-date copy minimizing data loss.
-3. `Reconfiguring the system`: Cients need to send their write requests to new leader, other followers need to take changes from new leader. If old leader comes back. the system must force it to step down and become a follower.
+3. `Reconfiguring the system`: Clients need to send their write requests to new leader, other followers need to take changes from new leader. If old leader comes back. the system must force it to step down and become a follower.
+
+---
+
+### Implementation of Replication Logs
+
+`empty`
+
+---
+
+### Problems with Replication Lag
