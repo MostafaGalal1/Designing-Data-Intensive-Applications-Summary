@@ -125,3 +125,53 @@ Automatic failover process:
 ---
 
 ### Problems with Replication Lag
+
+---
+
+## Chapter 6: Partitioning
+
+### Intro
+
+`Partitioning`: each piece of data belongs exactly to one partition to support `scalability`.
+
+Partition can be viewed as a small database though the database can support operations that affect multiple partitions.
+The dataset is distributed across many disks and the query load is distributed across many processors.
+
+Query operating on a single partition is executed independently on this partition, so throughput is scaled by adding more nodes and large complex queries can be parallelized even though this gets significantly harder.
+
+Depending on whether the workload is OLTP or OLAB, the tunning of the system differs but the fundamentals are the same.
+
+### Partitioning and Replication
+
+Partitioning is combined by replication for `fault tolerance` as a result replication of partitions applies equally to replication of databases.
+
+For a leader-follower replication, Each partition’s leader is assigned to one node, and its followers are assigned to other nodes (replication must be done on multiple nodes otherwise it loses its purpose). Each node may be the leader for some partitions and a follower for other partitions.
+
+The choice of partitioning scheme is mostly independent of the choice of replication scheme.
+
+### Partitioning of Key-Value Data
+
+Problem: How to decide which records to store on which nodes?
+
+The goal is to distribute the data and query load evenly making data handling and throughput scales linearly with the number of nodes.
+
+The presence of an unfair (`skewed`) partition will reduce efficiency and could lead to a high load on nodes which we call `hot spots` in this case resulting in a bottleneck.
+
+The simplest approach for avoiding hot spots is by randomly distributing data among nodes but a drawback of this approach is the need to query all nodes in parallel searching for data.
+A better approach is using a key-value data model where a record is accessed by its primary key, enhancing search operation (using binary search for example).
+
+### Partitioning by Key Range
+
+Assign a continuous range of keys (min to max) for each partition. the range of keys doesn't have to be evenly spaced as data isn't evenly distributed.
+Partition boundaries might be chosen manually by an administrator or automatically by a database.
+
+### Partitioning by Hash of Key
+
+To avoid skew and hot spots rather than partitioning by a range of keys, partitioning is done by a range of hashes where a hash function hashes the key (needn't be cryptographically strong) which helps distribute keys evenly.
+Even if the input strings are very similar, their hashes are evenly distributed across that range of numbers (Diffusion property).
+
+The partition boundaries can be evenly spaced, or they can be chosen pseudorandomly through `consistent hashing`.
+`Consistent Hashing`: a technique to evenly distribute load without having a central control or distributed consensus through choosing random partition boundaries.
+
+Using hash partitioning eliminates efficient range queries as data are now scattered across all the partitions (sort order is lost).
+Range queries thus need to be sent to all partitions or prohibited on sorted keys used in hash partitioning.
