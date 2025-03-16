@@ -141,6 +141,8 @@ Query operating on a single partition is executed independently on this partitio
 
 Depending on whether the workload is OLTP or OLAB, the tunning of the system differs but the fundamentals are the same.
 
+---
+
 ### Partitioning and Replication
 
 Partitioning is combined by replication for `fault tolerance` as a result replication of partitions applies equally to replication of databases.
@@ -148,6 +150,8 @@ Partitioning is combined by replication for `fault tolerance` as a result replic
 For a leader-follower replication, Each partition’s leader is assigned to one node, and its followers are assigned to other nodes (replication must be done on multiple nodes otherwise it loses its purpose). Each node may be the leader for some partitions and a follower for other partitions.
 
 The choice of partitioning scheme is mostly independent of the choice of replication scheme.
+
+---
 
 ### Partitioning of Key-Value Data
 
@@ -160,10 +164,14 @@ The presence of an unfair (`skewed`) partition will reduce efficiency and could 
 The simplest approach for avoiding hot spots is by randomly distributing data among nodes but a drawback of this approach is the need to query all nodes in parallel searching for data.
 A better approach is using a key-value data model where a record is accessed by its primary key, enhancing search operation (using binary search for example).
 
+---
+
 ### Partitioning by Key Range
 
 Assign a continuous range of keys (min to max) for each partition. the range of keys doesn't have to be evenly spaced as data isn't evenly distributed.
 Partition boundaries might be chosen manually by an administrator or automatically by a database.
+
+---
 
 ### Partitioning by Hash of Key
 
